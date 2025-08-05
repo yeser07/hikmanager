@@ -11,5 +11,9 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('devices', function () {
+    return Inertia::render('devices/Index');
+})->middleware(['auth', 'verified'])->name('devices.index');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
