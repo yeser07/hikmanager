@@ -10,14 +10,14 @@ class HikvisionEventService
 {
     protected string $url = 'https://192.168.100.62/ISAPI/AccessControl/AcsEvent?format=json';
 
-    protected string $username = env()
-    protected string $password = env()
+    protected string $username = env('HIKVISION_USERNAME');
+    protected string $password = env('HIKVISION_PASSWORD');
 
 
 
 
-    
-  
+
+
 ////https://192.168.100.62/ISAPI/AccessControl/AcsEvent?format=json enpoint
 
 ////PARAMS
@@ -35,8 +35,10 @@ class HikvisionEventService
 }*/
 
 
-    public function getEvents(array $params): array
+    public function getEvents(array $params, $deviceIp): array
     {
+        $this->url = 'https://' . $deviceIp . '/ISAPI/AccessControl/AcsEvent?format=json';
+
         try {
             $response = Http::withDigestAuth($this->username, $this->password)
                 ->withHeaders([
@@ -71,11 +73,6 @@ class HikvisionEventService
     }
 }
 
-
-
-
-  
-}
 
 
 

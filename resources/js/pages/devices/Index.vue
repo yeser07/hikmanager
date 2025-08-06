@@ -1,165 +1,87 @@
 <template>
-<Head title="Devices" />
-<AppLayout :breadcrumbs="[{ title: 'Devices', href: route('devices.index') }]">
+  <Head title="Devices" />
+  <AppLayout :breadcrumbs="[{ title: 'Devices', href: route('devices.index') }]">
     <div class="device-index">
-        <h1>Dispositivos Fingerprint</h1>
-        <button @click="openForm()">Registrar Dispositivo</button>
-        <table>
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Localidad</th>
-                    <th>Operación</th>
-                    <th>Dirección IP</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="device in devices" :key="device.id">
-                    <td>{{ device.nombre }}</td>
-                    <td>{{ device.localidad }}</td>
-                    <td>{{ device.operacion }}</td>
-                    <td>{{ device.direccionip }}</td>
-                    <td>
-                        <button @click="openForm(device)">Editar</button>
-                        <button @click="deleteDevice(device.id)">Eliminar</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+      <h1 class="text-5xl text-center">Fingerprint devices</h1>
+      <p class="text-center text-gray-600">Manage your fingerprint devices here.</p>
+      <hr><br>
 
-        <div v-if="showForm" class="modal">
-            <div class="modal-content">
-                <h2>{{ form.id ? 'Editar' : 'Registrar' }} Dispositivo</h2>
-                <form @submit.prevent="saveDevice">
-                    <label>
-                        Nombre:
-                        <input v-model="form.nombre" required />
-                    </label>
-                    <label>
-                        Localidad:
-                        <input v-model="form.localidad" required />
-                    </label>
-                    <label>
-                        Operación:
-                        <input v-model="form.operacion" required />
-                    </label>
-                    <label>
-                        Dirección IP:
-                        <input v-model="form.direccionip" required />
-                    </label>
-                    <div class="actions">
-                        <button type="submit">Guardar</button>
-                        <button type="button" @click="closeForm">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+      <div class="flex justify-center mb-4">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="openForm()">
+          Add Device <span class="ml-2">+</span>
+        </button>
+      </div>
+      <!-- Search input -->
+      <div class="mt-4 flex justify-center">
+        <input
+          v-model="search"
+          placeholder="Search..."
+          class="border px-3 py-2 rounded w-1/3"
+        />
+      </div>
+      <br>
+      <EasyDataTable
+        class="rounded-lg"
+        :headers="headers"
+        :items="devices"
+        :rows-per-page="5"
+        show-index
+        :search-value="search"
+      >
+        <template #item-actions="{ item }">
+          <button @click="openForm(item)" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 ml-2 pointer cursor-pointer">
+            <i class="fas fa-edit"></i>
+          </button>
+
+          <button @click="deleteDevice(item.id)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 ml-2 pointer cursor-pointer">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </template>
+      </EasyDataTable>
     </div>
-</AppLayout>
+  </AppLayout>
 </template>
 
-<script >
+<script setup>
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
+import { Head } from '@inertiajs/vue3'
+import AppLayout from '@/layouts/AppLayout.vue'
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
 
-import { Head } from '@inertiajs/vue3';
+const search = ref('')
 
+const devices = ref([])
 
-export default {
-    name: 'DevicesIndex',
-    data() {
-        return {
-            devices: [],
-            showForm: false,
-            form: {
-                id: null,
-                nombre: '',
-                localidad: '',
-                operacion: '',
-                direccionip: ''
-            }
-        };
-
-    },
+const headers = [
+  { text: 'Name', value: 'name' },
+  { text: 'Location', value: 'location' },
+  { text: 'Operation', value: 'operation' },
+  { text: 'IP Address', value: 'ip_address' },
+  { text: 'Actions', value: 'actions', sortable: false }
+]
 
 
-    components: {
-        AppLayout,
-        Head
-    },
+const getDevices = async () => {
+  try {
+    const response = await axios.get('/api/devices')
+    devices.value = response.data
+  } catch (error) {
+    console.error('Error fetching devices:', error)
+  }
+}
 
-    methods: {
-        openForm(device = null) {
-            if (device) {
-                this.form = { ...device };
-            } else {
-                this.form = {
-                    id: null,
-                    nombre: '',
-                    localidad: '',
-                    operacion: '',
-                    direccionip: ''
-                };
-            }
-            this.showForm = true;
-        },
-        closeForm() {
-            this.showForm = false;
-        },
-        saveDevice() {
-            if (this.form.id) {
-                // Editar
-                const idx = this.devices.findIndex(d => d.id === this.form.id);
-                if (idx !== -1) this.devices.splice(idx, 1, { ...this.form });
-            } else {
-                // Registrar
-                this.devices.push({
-                    ...this.form,
-                    id: Date.now()
-                });
-            }
-            this.closeForm();
-        },
-        deleteDevice(id) {
-            this.devices = this.devices.filter(d => d.id !== id);
-        }
-    },
+onMounted(() => {
+  getDevices()
+})
 
-};
+const openForm = () => {
+  window.location.href = route('devices.create')
+
+}
+
+const deleteDevice = (id) => {
+  // tu lógica para eliminar dispositivo
+}
 </script>
-
-<style scoped>
-.device-index {
-    max-width: 800px;
-    margin: 0 auto;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1em;
-}
-th, td {
-    border: 1px solid #ccc;
-    padding: 0.5em;
-    text-align: left;
-}
-button {
-    margin-right: 0.5em;
-}
-.modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.modal-content {
-    background: #fff;
-    padding: 2em;
-    border-radius: 8px;
-    min-width: 300px;
-}
-.actions {
-    margin-top: 1em;
-}
-</style>
