@@ -1,11 +1,22 @@
+
 <?php
 
-namespace App\Http\Services
+namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
-class HikAcsEventServices
+class HikvisionEventService
 {
+    protected string $url = 'https://192.168.100.62/ISAPI/AccessControl/AcsEvent?format=json';
 
+    protected string $username = env()
+    protected string $password = env()
+
+
+
+
+    
   
 ////https://192.168.100.62/ISAPI/AccessControl/AcsEvent?format=json enpoint
 
@@ -23,15 +34,43 @@ class HikAcsEventServices
   }
 }*/
 
-public function getAcsEvents($deviceIp,$startTime,$endTime,$maxResults)
-{
 
-  $url = 'https://'+$deviceIp+'/ISAPI/AccessControl/AcsEvent?format=json'
+    public function getEvents(array $params): array
+    {
+        try {
+            $response = Http::withDigestAuth($this->username, $this->password)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])
+                ->withoutVerifying()
+                ->post($this->url, $params);
 
-  $client = new GuzzleHttp\Client(['verify' => false ]);
+            if ($response->successful()) {
+                return $response->json();
+            }
 
-  try
+            Log::error('Error al obtener eventos Hikvision', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Error al obtener eventos',
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Excepción en HikvisionEventService', ['error' => $e->getMessage()]);
+
+            return [
+                'success' => false,
+                'message' => 'Excepción: ' . $e->getMessage(),
+            ];
+        }
+    }
 }
+
 
 
 
