@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Devices;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Device;
+use Inertia\Inertia;
 
 class DeviceController extends Controller
 {
@@ -25,9 +26,27 @@ class DeviceController extends Controller
     {
         try {
             $device = Device::findOrFail($id);
-            return response()->json($device);
+
+            if (!$device) {
+                return Inertia::render('devices',
+                    [
+                        'error' => 'Device not found',
+                    ]
+                );
+            }
+
+            //send divice as prop to the CreateDevice component
+
+            return Inertia::render('devices/CreateDevice', [
+                'device' => $device,
+            ]);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Device not found'], 404);
+            return Inertia::render('devices',
+                [
+                    'error' => 'Failed to fetch device: ' . $e->getMessage(),
+                ]
+            );
         }
     }
 
@@ -69,10 +88,25 @@ class DeviceController extends Controller
     {
         try {
             $device = Device::findOrFail($id);
+            if(!$device){
+                return Inertia::render('devices',
+                    [
+                        'error' => 'Device not found',
+                    ]
+                );
+            }
             $device->delete();
-            return response()->json(['message' => 'Device deleted successfully']);
+
+            return Inertia::render('devices/Index', [
+                'message' => 'Device deleted successfully',
+            ]);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete device'], 500);
+            return Inertia::render('devices',
+                [
+                    'error' => 'Failed to delete device: ' . $e->getMessage(),
+                ]
+            );
         }
     }
 

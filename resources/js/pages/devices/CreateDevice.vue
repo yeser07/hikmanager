@@ -46,11 +46,20 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
+
+const props = defineProps({
+  device: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+
 const form = ref({
-  name: '',
-  location: '',
-  operation: '',
-  ip_address: '',
+  device_id: props.device?.device_id || null,
+  name: props.device?.name || '',
+  location: props.device?.location || '',
+  operation: props.device?.operation || '',
+  ip_address: props.device?.ip_address || '',
 })
 
 const errors = ref({})
@@ -61,8 +70,17 @@ const submitForm = async () => {
         return;
     }
 
+    if (form.value.device_id) {
+        await updateDevice()
+    } else {
+        await createNewDevice()
+    }
 
-  try {
+}
+
+const createNewDevice = async () => {
+ try {
+
     await axios.post('/api/devices', form.value)
 
     Swal.fire({
@@ -101,6 +119,46 @@ const submitForm = async () => {
     }
 }
 
+const updateDevice = async () => {
+  try {
+    await axios.put(`/api/devices/${form.value.device_id}`, form.value)
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Device Updated',
+      text: 'The device has been updated successfully!',
+      confirmButtonColor: '#3085d6'
+    }).then(() => {
+      window.location.href = route('devices.index')
+    })
+  } catch (error) {
+    if (error.response?.status === 422) {
+        errors.value = error.response.data.errors
+        const firstError = Object.values(errors.value)[0]?.[0] || 'Please fix the highlighted fields.'
+
+        Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: firstError,
+        confirmButtonColor: '#d33'
+        })
+
+    } else {
+            const backendMessage =
+            error.response?.data?.error ||
+            error.response?.data?.message ||
+            'Failed to update device. Try again later.'
+
+            Swal.fire({
+            icon: 'error',
+            title: 'Server Error',
+            text: backendMessage,
+            confirmButtonColor: '#d33'
+            })
+        }
+    }
+}
+
 function formInputValidation() {
     let name = form.value.name.trim();
     let location = form.value.location.trim();
@@ -126,4 +184,6 @@ function formInputValidation() {
     }
     return valid;
 }
+
+
 </script>

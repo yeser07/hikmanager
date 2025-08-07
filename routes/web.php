@@ -32,4 +32,14 @@ Route::get('/devices/create', function () {
 Route::post('/api/devices', [DeviceController::class, 'createDevice'])
     ->middleware(['auth', 'verified']);
 
+Route::get('/devices/{deviceId}', [DeviceController::class, 'getDevice'])
+    ->middleware(['auth', 'verified'])->name('devices.show');
+
+Route::put('/api/devices/{deviceId}', [DeviceController::class, 'updateDevice'])
+    ->middleware(['auth', 'verified']);
+
+Route::delete('/api/devices/{deviceId}', [DeviceController::class, 'deleteDevice'])
+    ->middleware(['auth', 'verified']);
+    
+
 //Route::post('/api/get-acs-events', [ReportsController::class, 'getAcsEvents']);

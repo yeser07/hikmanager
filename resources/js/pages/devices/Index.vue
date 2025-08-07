@@ -28,12 +28,12 @@
         show-index
         :search-value="search"
       >
-        <template #item-actions="{ item }">
-          <button @click="openForm(item)" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 ml-2 pointer cursor-pointer">
+        <template #item-actions=" item ">
+          <button @click="openForm(item.device_id)" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 ml-2 pointer cursor-pointer">
             <i class="fas fa-edit"></i>
           </button>
 
-          <button @click="deleteDevice(item.id)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 ml-2 pointer cursor-pointer">
+          <button @click="deleteDevice(item.device_id)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 ml-2 pointer cursor-pointer">
             <i class="fas fa-trash-alt"></i>
           </button>
         </template>
@@ -49,6 +49,7 @@ import { Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
+import Swal from 'sweetalert2'
 
 const search = ref('')
 
@@ -76,12 +77,47 @@ onMounted(() => {
   getDevices()
 })
 
-const openForm = () => {
-  window.location.href = route('devices.create')
 
+const openForm = (device_id) => {
+    console.log('Opening form for device:', device_id)
+  if (device_id) {
+    window.location.href = route('devices.show', { deviceId: device_id })
+  } else {
+    window.location.href = route('devices.create')
+  }
 }
 
 const deleteDevice = (id) => {
-  // tu lógica para eliminar dispositivo
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.delete(`/api/devices/${id}`)
+          .then(() => {
+            Swal.fire(
+              'Deleted!',
+              'Your device has been deleted.',
+              'success'
+            )
+            getDevices()
+          })
+          .catch(error => {
+            console.error('Error deleting device:', error)
+            Swal.fire(
+              'Error!',
+              'There was an error deleting the device.',
+              'error'
+            )
+          })
+      }
+    })
 }
+
 </script>
