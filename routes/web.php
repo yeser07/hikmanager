@@ -3,6 +3,8 @@
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Devices\DeviceController;
+use App\Http\Controllers\Reports\ReportsController;
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
@@ -27,5 +29,7 @@ Route::get('/devices/create', function () {
     return Inertia::render('devices/CreateDevice');
 })->middleware(['auth', 'verified'])->name('devices.create');
 
-Route::post('/api/devices', [DeviceController::class, 'createDevice']);
+Route::post('/api/devices', [DeviceController::class, 'createDevice'])
+    ->middleware(['auth', 'verified']);
 
+//Route::post('/api/get-acs-events', [ReportsController::class, 'getAcsEvents']);

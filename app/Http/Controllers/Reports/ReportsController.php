@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Reports;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Services\HikvisionEventService;
+
+use App\Http\Services\HikvisionEventService;
+
 use Carbon\Carbon;
 
 class ReportsController extends Controller
@@ -23,6 +25,8 @@ class ReportsController extends Controller
 
     public function getAcsEvents(Request $request)
     {
+        //dd($request->all());
+
         $deviceIp = $request->input('device_ip');
 
         if (!$deviceIp) {
@@ -43,7 +47,18 @@ class ReportsController extends Controller
         ];
 
 
-        $events = $this->eventService->getEvents($params, $deviceIp);
+        $mokData = $this->eventService->getEvents($params, $deviceIp);
+
+        $events =$mokData['AcsEvent']['InfoList'];
+
+        //Discard events with currentVerifyMode:invalid
+
+       $events = array_filter($events, function ($event) {
+            return isset($event['currentVerifyMode']) && $event['currentVerifyMode'] !== 'invalid';
+        });
+
+
+
 
         return response()->json($events);
     }
