@@ -56,6 +56,7 @@ const footerNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavUser />
+            <h5 class="text-sm text-muted-foreground text-center">Copyright &copy; {{ new Date().getFullYear() }}</h5>
         </SidebarFooter>
     </Sidebar>
     <slot />

@@ -40,6 +40,10 @@ Route::put('/api/devices/{deviceId}', [DeviceController::class, 'updateDevice'])
 
 Route::delete('/api/devices/{deviceId}', [DeviceController::class, 'deleteDevice'])
     ->middleware(['auth', 'verified']);
-    
+
+Route::get('/acs-events-report', function () {
+    return Inertia::render('reports/AcsEventsReport');
+})->middleware(['auth', 'verified'])->name('reports.acs-events');
+
 
 //Route::post('/api/get-acs-events', [ReportsController::class, 'getAcsEvents']);
